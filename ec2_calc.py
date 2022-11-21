@@ -1,6 +1,5 @@
 import boto3
-import xlsxwriter
-from eip_calc import all_eip
+import excel_io
 
 '''
 ec2.instance:
@@ -26,12 +25,12 @@ EMPTY = '-'
 
 # calc ec2 invalid data
 def calc_data():
-    eips = all_eip()
     ec2 = boto3.resource('ec2')
-    
+    title = ['id','type','volume','vpc_id','launch_time','network','private_dns','private_ip','public_dnc','public_ip','status','tags']
+    FILE_ROWS.append(title)
     for instance in ec2.instances.all():
         # inctance is not running and not bind EIP
-        if instance.state['Name'] != 'running' or instance.id not in eips:
+        if instance.state['Name'] != 'running':
             instanceIds.add(instance.id)
             row = []
             row.append(instance.id)
@@ -67,26 +66,13 @@ def calc_data():
 
             FILE_ROWS.append(row)
 
-def write_to_excel():
-    workbook = xlsxwriter.Workbook(FILE_NAME)
-    worksheet = workbook.add_worksheet(RESOURCE_SHEET)
-    worksheet.set_column('A:AZ', 15)
-    worksheet.set_row(0, 75)
-    wrap = workbook.add_format({'text_wrap': True,'align':'center','valign':'vcenter'})
-    row = 1
-    for item in FILE_ROWS:
-        column = 0
-        for rowItem in item:
-            worksheet.write(row,column,rowItem,wrap)
-            column += 1
-        row += 1
-    
-    workbook.close()
+
+
 
 if __name__ == '__main__':
 
     calc_data()
-    write_to_excel()
+    excel_io.write_to_excel(FILE_NAME,RESOURCE_SHEET,FILE_ROWS)
 
     for row in FILE_ROWS:
        print(row)
