@@ -1,8 +1,6 @@
 import xlrd
 
 
-def read_excel(file_name):
-    return (file_name,0)
 
 def read_excel(file_name,sheet_index):
     # 打开excel表格
@@ -18,16 +16,13 @@ def read_excel(file_name,sheet_index):
         # # excel工作表的行列操作
         n_rows = table.nrows  # 获取该sheet中的有效行数
         # n_cols=table.ncols  # 获取该sheet中的有效列数
-        # for i in range(1, n_rows):
-        #     row = table.row(i)
-        #     type = row[6].value + ' ' + row[7].value + ' ' + row[11].value
-        #     type = type.strip()
-
-        #     if SHANGHAI.get(type) != None:
-        #         print(str(SHANGHAI.get(type)))
-        #     else:
-        #         print("epmty")
-
+        result = []
+        for i in range(0, n_rows):
+            row = table.row(i)
+            # type = row[6].value + ' ' + row[7].value + ' ' + row[11].value
+            # type = type.strip()
+            result.append(row)
+        return result
        
     except Exception as e:
         print("error " + file_name + " "+ e)
@@ -35,3 +30,6 @@ def read_excel(file_name,sheet_index):
         pass
     finally:
         pass
+
+if __name__ == '__main__':
+    read_excel('aws_ec2.xlsx',0)

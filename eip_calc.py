@@ -1,5 +1,5 @@
 import boto3
-import excel_io
+import excel_writer
 FILE_NAME = "aws_eip.xlsx"
 RESOURCE_SHEET = "EIP"
 FILE_ROWS = []
@@ -45,6 +45,9 @@ def calc_invalid_eip():
             FILE_ROWS.append(row)
 
 if __name__ == '__main__':
-    calc_invalid_eip()
-    excel_io.write_to_excel(FILE_NAME,RESOURCE_SHEET,FILE_ROWS)
+    #calc_invalid_eip()
+    #excel_writer.write_to_excel(FILE_NAME,RESOURCE_SHEET,FILE_ROWS)
+    tag = {'A':'a','B':'b'}
+    for k in tag:
+        print(k + ' ' + tag[k])
 

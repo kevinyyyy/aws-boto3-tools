@@ -1,5 +1,6 @@
 import boto3
-import excel_io
+import excel_writer
+import excel_reader
 
 '''
 ec2.instance:
@@ -23,16 +24,44 @@ FILE_NAME = 'aws_ec2.xlsx'
 instanceIds = set()
 EMPTY = '-'
 
+def ec2_price():
+    old_table = excel_reader.read_excel('aws_ec22.xlsx',0)
+    price_dict = {}
+    for row in old_table:
+        price_dict[row[0].value] = row[13].value
+    return price_dict
+
 # calc ec2 invalid data
 def calc_data():
     ec2 = boto3.resource('ec2')
-    title = ['id','type','volume','vpc_id','launch_time','network','private_dns','private_ip','public_dnc','public_ip','status','tags']
+    title = ['Name','id','type','volume','vpc_id','launch_time','network','private_dns','private_ip','public_dnc','public_ip','status','节约成本（月）','节约成本（年）']
     FILE_ROWS.append(title)
-    for instance in ec2.instances.all():
-        # inctance is not running and not bind EIP
+    price_dict = ec2_price()
+    instanceAll = ec2.instances.all()
+    name_dict = {}
+    tags_set = set()
+    for instance in instanceAll:
+        if instance.state['Name'] != 'running':
+            if len(instance.tags) > 0:
+                    for tag in instance.tags:
+                        key = tag['Key']
+                        if key == 'Name':
+                            name_dict[instance.id] = tag['Value']
+                            continue
+                        tags_set.add(key)
+
+    for tag in tags_set:
+        title.append('tag_' + tag)
+        
+    for instance in instanceAll:
+        # inctance is not running 
         if instance.state['Name'] != 'running':
             instanceIds.add(instance.id)
             row = []
+            if name_dict.get(instance.id) != None:
+                row.append(name_dict[instance.id])
+            else:
+                row.append(EMPTY)
             row.append(instance.id)
             row.append(instance.instance_type)
             volumeStr = ''
@@ -57,25 +86,34 @@ def calc_data():
                 row.append(instance.public_ip_address)
             else:
                 row.append(EMPTY)
-
             row.append(instance.state['Name'])
+            if price_dict.get(instance.id) != None:
+                row.append(price_dict.get(instance.id))
+                row.append(price_dict.get(instance.id) * 12)
+            else:
+                row.append(EMPTY)
+                row.append(EMPTY)
             if len(instance.tags) > 0:
-                for tag in instance.tags:
-                    row.append('key_' + tag['Key'])
-                    row.append('value_' + tag['Value'])
-
+                tag_list = instance.tags
+                tag_dict = {}
+                for t in tag_list:
+                    tag_dict[t['Key']] = t['Value']
+                for tag in tags_set:
+                    if tag_dict.get(tag) != None:
+                        row.append(tag_dict[tag])
+                    else:
+                        row.append(EMPTY)
+                
             FILE_ROWS.append(row)
-
-
 
 
 if __name__ == '__main__':
 
     calc_data()
-    excel_io.write_to_excel(FILE_NAME,RESOURCE_SHEET,FILE_ROWS)
+    excel_writer.write_to_excel(FILE_NAME,RESOURCE_SHEET,FILE_ROWS)
 
-    for row in FILE_ROWS:
-       print(row)
+    # for row in FILE_ROWS:
+    #    print(row)
 
     # print('size of invalid ec2:' + str(len(instanceIds)))
     # for id in instanceIds:
