@@ -3,29 +3,36 @@ import excel_writer
 
 EMPTY = '-'
 FILE_ROW = []
+
+def print_attr(snapshot):
+    for attr in dir(snapshot):
+        if type(getattr(snapshot,attr)) == str:
+            print(attr + ' :' + str(type(getattr(snapshot,attr))) +':'+ str(getattr(snapshot,attr)))
+        else:
+            print_attr(getattr(snapshot,attr))
 def all_snapshot():
 
     ec2 = boto3.resource('ec2')
-    snapshot = ec2.Snapshot('snap-37b04dc6')
+    snapshot = ec2.Snapshot('snap-0c7b8efd')
     for attr in dir(snapshot):
-        print(attr + ' :'+ str(getattr(snapshot,attr)))
+        print(attr + ' :' + str(type(getattr(snapshot,attr))) +':'+ str(getattr(snapshot,attr)))
 
-    title = ['id','kms_key_id','owner_id','progress','start_time','state','state_message','storage_tier','volume_id','volume_size']
-    volume_dict = {}
-    result = []
-    tags_set = set()
-    volumes = ec2.volumes.all()
-    for v in volumes:
-        volume_dict[v.id] = 1
-    i = 0
-    for item in ec2.snapshots.all():
-        i+=1
-        if volume_dict.get(item.volume_id) == None:
-            if item.tags != None:
-                for tag in item.tags:
-                    key = tag['Key']
-                    tags_set.add(key)
-    print(i)
+    # title = ['id','kms_key_id','owner_id','progress','start_time','state','state_message','storage_tier','volume_id','volume_size']
+    # volume_dict = {}
+    # result = []
+    # tags_set = set()
+    # volumes = ec2.volumes.all()
+    # for v in volumes:
+    #     volume_dict[v.id] = 1
+    # i = 0
+    # for item in ec2.snapshots.all():
+    #     i+=1
+    #     if volume_dict.get(item.volume_id) == None:
+    #         if item.tags != None:
+    #             for tag in item.tags:
+    #                 key = tag['Key']
+    #                 tags_set.add(key)
+    # print(i)
     # for tag in tags_set:
     #     title.append('tag_' + tag)
     # FILE_ROW.append(title)

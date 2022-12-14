@@ -35,18 +35,20 @@ def all_cos():
             all_tags[bucket] = tag[bucket]
 
     tags_set = set()
-    for k in all_tags:
-        tags_set.add(k['Key'])
+    for tag in all_tags:
+        for t in all_tags[tag]:
+            tags_set.add(t['Key'])
     
     for k in tags_set:
         title.append('tag_' + k)
+    FILE_ROW.append(title)
 
     for bucket in bucket_name_list:
         current_bucket = s3.Bucket(bucket)
         row = []
         #title = ['name', 'creation_date', 'region']
         row.append(current_bucket.name)
-        row.append(current_bucket.create_date.strftime("%Y-%m-%d %H:%M:%S"))
+        row.append(current_bucket.creation_date.strftime("%Y-%m-%d %H:%M:%S"))
         row.append('cn-north-1')
         tags = all_tags.get(current_bucket.name)
         if tags != None:
@@ -58,6 +60,7 @@ def all_cos():
                     row.append(tag_dict[key])
                 else:
                     row.append('-')
+        FILE_ROW.append(row)
         
 def s3_tags(bucket_name):
     try:
